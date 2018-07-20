@@ -5,7 +5,6 @@
         <title>Tasklist</title>
     </head>
     
-    
     <body>
         @include('commons.error_messages')
         
