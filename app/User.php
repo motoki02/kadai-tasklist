@@ -26,4 +26,11 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+    
+    // tasksメソッド
+    // 1つのユーザーが複数のコンテンツを扱う
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 }

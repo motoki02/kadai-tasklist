@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Http\Controllers\Controller;
+
 use App\Task;
 
-class TasksController extends Controller
+use App\User;
+
+
+class TasklistController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -15,11 +20,32 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $tasks = Task::all();
+        // Auth::check()は現在ログイン中か確認、Auth::user()はログインユーザーを取得
+        $data = [];
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            
+            // $user->tasks()とした場合、User.phpのtasks()メソッドと対応する
+            // $tasks は変数
+            // $user->tasks() はUser.phpの中にあるメソッド（関数的なもの)
+            // コンテンツとユーザーIIDを日付順に降順で10ページづつ表示させる
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+            
+            
+            
+            // $tasklistsというデータに'kadai-tasklit'という名前(ラベル)を付与している
+            // ['kadai-tasklist' => $tasklists,] // 左と右は別物
+            // $data['kadai-tasklist'] === $tasklists // この2つは同じ
+            $data = [
+                'user' => $user,
+                'tasks' => $tasks,
+            ];
+            $data += $this->counts($user);
         
-        return view('tasks.index', [
-            'tasks' => $tasks,
-            ]);
+            return view('tasks.index', $data);
+        }else {
+            return view('welcome');
+        }
     }
 
     /**
@@ -50,6 +76,7 @@ class TasksController extends Controller
             ]);
         
         $task = new Task;
+        $task->user_id = auth()->user()->id;
         $task->status = $request->status;
         $task->content = $request->content;
         $task->save();
